@@ -18,26 +18,26 @@ Key Highlights:
 An open-source RISC-V SoC integration harness developed by Efabless for the Open MPW program. It provides standard infrastructure (Wishbone, GPIO, memory, clocking) and a dedicated user project area, allowing designers to focus on custom hardware implementation and silicon-ready verification workflows.
 
 # Repository Structure
-  Week_1 PicoRV32A ASIC Design Flow
-  Week_2 OpenROAD Flow Scripts (ORFS)
-  Week_3 SoC Block-Level Verification
-  Week_4 User Project Wrapper
-  Week_5 Mixed-Mode Gate-Level Simulation
-  Week_6 Independent ASIC Block Implementation
+  1. Week_1 PicoRV32A ASIC Design Flow
+  2. Week_2 OpenROAD Flow Scripts (ORFS)
+  3. Week_3 SoC Block-Level Verification
+  4. Week_4 User Project Wrapper
+  5. Week_5 Mixed-Mode Gate-Level Simulation
+  6. Week_6 Independent ASIC Block Implementation
 
 This repository is structured sequentially to mirror the standard ASIC implementation pipeline—from RTL to GDSII layout. Each folder provides a self-contained, highly reproducible documentation package containing the step-by-step implementation, exact commands used, generated reports, layout screenshots, and simulation waveforms. Additionally, each section highlights the specific challenges encountered, the debugging methodology applied, and key technical takeaways.
 
 # Tools
-OpenLane
-OpenROAD
-ORFS
-Yosys
-OpenSTA
-Magic
-KLayout
-GTKWave
-Icarus Verilog
-Caravel SoC
+OpenLane,
+OpenROAD,
+ORFS,
+Yosys,
+OpenSTA,
+Magic,
+KLayout,
+GTKWave,
+Icarus Verilog,
+Caravel SoC.
 
 # Technical Accomplishments
 1. Mastered the complete open-source RTL-to-GDSII flow using OpenLane and ORFS on the SKY130 node.
