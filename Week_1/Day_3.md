@@ -1,7 +1,3 @@
-Here is the completely rewritten documentation for your `Day_3.md` file. It features professional VLSI and STA (Static Timing Analysis) terminology, clear comparative tables, structured math expressions, and appropriate relative image path references.
-
----
-
 # Day 3: Custom Cell Integration & Multi-Corner Static Timing Analysis (STA)
 
 ##  Overview
