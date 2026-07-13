@@ -13,6 +13,8 @@ Key Highlights:
 
 4. Engineering Problem-Solving: Tackled real-world hardware description challenges, including timing closure, routing congestion, and environment configuration debugging.
 
+![image alt](https://github.com/Hrishabh-VLSI/VSD/blob/2c1222d42d4a2d243415ccb7ddd5a33dc9f6c304/Week_1/Images/flow.webp)
+
 An open-source RISC-V SoC integration harness developed by Efabless for the Open MPW program. It provides standard infrastructure (Wishbone, GPIO, memory, clocking) and a dedicated user project area, allowing designers to focus on custom hardware implementation and silicon-ready verification workflows.
 
 # Repository Structure
