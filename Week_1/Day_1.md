@@ -11,7 +11,7 @@ Day 1 focuses on the critical transition where behavioral Verilog stops looking 
 Before executing synthesis, the OpenLane container was initialized. OpenLane builds a strict, traceable workspace by loading the design configurations alongside the `sky130_fd_sc_hd` (High Density) standard cell library.
 
 ![OpenLane Initialization](https://raw.githubusercontent.com/Hrishabh-VLSI/VSD/9c4b5d11392128e5e4617495a68631db3ff9b2d2/Week_1/Images/Day_1_1.png)
-*Figure 1: OpenLane tool container initialization and environment setup.*
+
 
 ### The Run Directory Structure
 
@@ -22,9 +22,8 @@ Every execution spawns a isolated, unique timestamped directory. This strict sep
 * `/results/` – Synthesized output artifacts, including the final gate-level netlist (`.v`).
 * `/tmp/` – Intermediate generic logic representations prior to technology mapping.
 
-
 ![Run Directory Structure](https://raw.githubusercontent.com/Hrishabh-VLSI/VSD/9c4b5d11392128e5e4617495a68631db3ff9b2d2/Week_1/Images/Day_1_2.png)
-*Figure 2: Structure of the automatically generated timestamped run directory.*
+
 ---
 
 ## Synthesis Metrics & Physical Footprint
@@ -32,14 +31,14 @@ Every execution spawns a isolated, unique timestamped directory. This strict sep
 Running `run_synthesis` triggers logic optimization, technology mapping, and a single-corner pre-layout Static Timing Analysis (STA).
 
 ![Synthesis Invocation](https://raw.githubusercontent.com/Hrishabh-VLSI/VSD/9c4b5d11392128e5e4617495a68631db3ff9b2d2/Week_1/Images/Day_1_3.png)
-*Figure 3: Executing Yosys logic synthesis command within the OpenLane shell.*
+
 
 ### Design Profile & Cell Utilization
 
 Synthesis expands a relatively compact RTL codebase into thousands of physical components. The structural composition of the synthesized PicoRV32A core yielded the following metrics:
 
 ![Area Profile Report](https://raw.githubusercontent.com/Hrishabh-VLSI/VSD/9c4b5d11392128e5e4617495a68631db3ff9b2d2/Week_1/Images/Day_1_5.png)
-*Figure 5: Total cell area estimation report mapped on the SKY130 standard library.*
+
 
 | Metric | Synthesized Value / Report Value |
 | --- | --- |
@@ -59,7 +58,7 @@ To validate the temporal integrity of the netlist prior to physical placement, a
 ### Timing Slack Summary
 
 ![Flip-Flop Distribution](https://raw.githubusercontent.com/Hrishabh-VLSI/VSD/9c4b5d11392128e5e4617495a68631db3ff9b2d2/Week_1/Images/Day_1_6.png)
-*Figure 6: Sequential elements (DFF) report and logic ratio evaluation.*
+
 
 ```ini
 Worst Negative Slack (WNS)  = 0.00 ns
@@ -79,14 +78,14 @@ Inspecting the final gate-level netlist demonstrates that behavioral description
 
 
 ![Pre-Mapping Logic Analysis](https://raw.githubusercontent.com/Hrishabh-VLSI/VSD/9c4b5d11392128e5e4617495a68631db3ff9b2d2/Week_1/Images/Day_1_7.png)
-*Figure 7: Generic logic structure status before standard cell mapping.*
+
 
 ![Pre-Layout Static Timing Analysis](https://raw.githubusercontent.com/Hrishabh-VLSI/VSD/9c4b5d11392128e5e4617495a68631db3ff9b2d2/Week_1/Images/Day_1_8.png)
-*Figure 8: Setup and hold slack results showing clean, violation-free timing closure.*
+
 
 
 ![Gate-Level Netlist Snippet](https://raw.githubusercontent.com/Hrishabh-VLSI/VSD/9c4b5d11392128e5e4617495a68631db3ff9b2d2/Week_1/Images/Day_1_9.png)
-*Figure 9: Snippet of the generated structural Verilog netlist featuring explicit SKY130 standard cell instantiations.*
+
 
 ```verilog
 // Example snippet of the generated gate-level hardware description
