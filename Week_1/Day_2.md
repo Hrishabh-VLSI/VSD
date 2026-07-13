@@ -22,8 +22,8 @@ Floorplanned with width = 1267.76 µm
 Floorplanned with height = 1267.52 µm
 
 ```
+![Running Floorplan](Images/Day_2_1.png)
 
-$$\text{Aspect Ratio} = \frac{\text{Width}}{\text{Height}} = \frac{1267.76\,\mu\text{m}}{1267.52\,\mu\text{m}} \approx 1.0$$
 
 An Aspect Ratio of approximately $1.0$ yields a square floorplan. This symmetric footprint uniformly balances routing resources, limits localized horizontal or vertical routing congestion, and optimizes the structural implementation of subsequent design steps.
 
@@ -42,6 +42,7 @@ designs/picorv32a/config.tcl
 set ::env(FP_CORE_UTIL) "10"
 
 ```
+![Design Configuration](Images/Day_2_2.png)
 
 ### Utilization Formula
 
@@ -52,6 +53,8 @@ A setting of `10` allocates exactly 10% of the interior core space to standard l
 ### Runtime Snapshots
 
 OpenLane does not parse variables directly from local directories mid-execution. It captures global PDK specifications, design adjustments, and system defaults to export an isolated runtime snapshot:
+
+![Initial Core Utilization](Images/Day_2_3.png)
 
 ```text
 runs/RUN_xxx/config.tcl
@@ -76,6 +79,7 @@ UNITS DISTANCE MICRONS 1000 ;
 DIEAREA ( 0 0 ) ( 1279175 1289895 ) ;
 
 ```
+![Die Area DEF File](Images/Day_2_4.png)
 
 The parameters inside the `.def` manifest are represented in Database Units (DBU). For this process node, $1000 \text{ DBU} = 1\,\mu\text{m}$.
 
@@ -98,10 +102,13 @@ lef read ../../../tmp/merged.nom.lef \
 def read picorv32a.def &
 
 ```
+![Magic Command](Images/Day_2_5.png)
 
 The interface visualizes empty routing corridors, uniform row structures, and the outer layout margins. No logic cell blocks are mapped at this point; instead, pre-placement structures are instantiated across the floorplan:
 
 ### Pre-Placement Cell Structures
+
+![Floorplan Full Layout](Images/Day_2_6.png)
 
 * **Decoupling Capacitors (Decaps):** Positioned at boundary margins to serve as localized charge reservoirs, mitigating transient $IR$ drop and supply voltage switching noise during clock edges.
 * **Tap Cells:** Placed periodically across every site row to bias the substrate and $N$-wells, preventing latch-up hazards under high switching frequencies.
@@ -115,7 +122,7 @@ Layer: metal3
 Signals: VPWR, VGND
 
 ```
-
+![Standard Cells Abstraction](Images/Day_2_7.png)
 The power infrastructure is synthesized prior to standard cell placement. It forms wide horizontal and vertical power straps designed to deliver balanced electrical voltage throughout the silicon core, preventing power electromigration and maintaining timing reliability.
 
 ---
@@ -128,14 +135,14 @@ To evaluate the direct correlation between utilization constraints and physical 
 set ::env(FP_CORE_UTIL) "30"
 
 ```
-
+![Pin Layer Identification](Images/Day_2_8.png)
 Re-running the floorplan updated the structural blueprint definitions:
 
 ```text
 DIEAREA ( 0 0 ) ( 743200 753920 ) ;
 
 ```
-
+![Power Distribution Network](Images/Day_2_9.png)
 Converting the updated metrics highlights the structural footprint reduction:
 
 | Metric | Low Density Setup (Default) | High Density Setup (Experiment) | Net Footprint Shift |
@@ -148,7 +155,7 @@ Converting the updated metrics highlights the structural footprint reduction:
 >  **Core Mechanical Insight:** Increasing utilization directly squeezes vacant whitespace out of the layout. While it yields compact, cost-efficient silicon dies, it severely restricts downstream routing resources, amplifying wirelength density and routing congestion on Day 5.
 
 ---
-
+![Modified Design Configuration](Images/Day_2_10.png)
 ##  Standard Cell Placement & Multi-Objective Optimization
 
 Following the infrastructure lock, cell placement is executed:
@@ -157,7 +164,7 @@ Following the infrastructure lock, cell placement is executed:
 run_placement
 
 ```
-
+![Updated Core Utilization](Images/Day_2_11.png)
 The physical placement engine decomposes the operation into two discrete passes:
 
 ### 1. Global Placement
@@ -180,10 +187,11 @@ lef read ../../../tmp/merged.nom.lef \
 def read picorv32a.def &
 
 ```
-
+![Updated Die Area DEF](Images/Day_2_12.png)
 Zooming into the layout row sites confirms that the synthesized cells are fully legalized and locked into place. Cells are positioned based on logic connectivity weight and timing criticality—keeping interconnected flip-flops and combinational logic tightly grouped to minimize parasitic RC wire delay and optimize performance.
 
 ---
+![Running Placement](Images/Day_2_13.png)
 
 ## Key Technical Takeaways
 
