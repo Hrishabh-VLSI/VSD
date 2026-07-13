@@ -1,161 +1,106 @@
+# Week 3 (SoC): Functional Verification & System Integration (VSDSquadron)
 
-# Week 3: Native EDA Compilations & Host Environment Engineering
+## Overview
 
-## 📌 Overview
-
-Week 3 focuses on migrating away from containerized sandboxes to build the **OpenROAD** physical design platform natively from source code on an **Ubuntu 24.04 LTS** host system. This phase explores the internal architecture of large-scale Electronic Design Automation (EDA) frameworks, uncovering compilation dependencies, resolving interface wrapper generation tool version conflicts, and validating custom binaries.
-
----
-
-## 🔬 Containerized Sandboxing vs. Native Environments
-
-Relying on preconfigured Docker environments inside automation suites like OpenROAD Flow Scripts (ORFS) hides the underlying system architectures. Prior to source compilation, an evaluation of the host system's native EDA capabilities was performed:
-
-```bash
-which openroad
-openroad --version
-
-```
-
-The initial command returned no valid paths, indicating a clean host system.
-
-An installation attempt using standard binary setup scripts failed due to system package mismatches, missing shared runtime paths, and absent graphical toolkit elements (`Qt5`) and specialized `Python` extension runtimes.
-
-### Environment Status Matrix
-
-| Infrastructure Platform | OpenROAD Execution Status | Structural Environment Realities |
-| --- | --- | --- |
-| **Host Ubuntu 24.04 OS** | Not Installed | Bare runtime environment; no native EDA configurations present. |
-| **Binary Setup Script** | **FAILED** | Aborted due to missing shared libraries, dynamic links, and Qt/Python clashes. |
-| **ORFS Dev Container** | Functional | Isolated, pre-built sandbox packaging verified production binaries. |
+This phase moves the design workflow into **firmware-driven functional verification** and system integration. Using the open-source **VSDSquadron SoC**—built around the **VexRiscv RISC-V** processor core and integrated within the **Efabless Caravel** system harness—this curriculum implements block-level and system-level verification pipelines. Testing was executed across two distinct configurations: **Standalone Block Verification** to isolate peripheral logic, and **Caravel-Integrated System Verification** to analyze inter-module communications, bus contention, and hardware-software interactions under realistic operating conditions.
 
 ---
 
-## 🛠️ Repository Provisioning & Dependency Engineering
+## System Architecture & Peripheral Mapping
 
-To initiate a custom native build, the complete OpenROAD source hierarchy was cloned recursively from GitHub to capture all structural submodules:
+The VSDSquadron SoC acts as an educational and production-ready reference platform for open-source silicon validation. It bridges the gap between individual, isolated RTL blocks and complete system-level chips by exposing standard industrial interfaces through a Wishbone interconnect fabric:
 
-```bash
-git clone --recursive https://github.com/TheOpenROADProject/OpenROAD.git
-cd OpenROAD
-
-```
-
-The repository footprint extends beyond **900 MB**, enclosing core optimization engines, unit test benches, and third-party mathematical wrappers.
-
-To link the required system dependencies, the internal automated provisioning utilities were launched:
-
-```bash
-sudo ./etc/DependencyInstaller.sh
-
-```
-
-This routine installs a complex ecosystem of developer packages, linking compiler toolchains and math libraries:
-
-* **Build Tools:** `CMake` build generators, `Bison` parser setups, and `Flex` lexical analyzers.
-* **Core Libraries:** `Boost` C++ utility arrays, `Eigen` template algebras, and `Abseil` common runtimes.
-* **Optimization Frameworks:** Google `OR-Tools` linear programming routines.
+* **Processing Core:** 32-bit VexRiscv RISC-V CPU.
+* **Primary Interconnect:** Standardized Wishbone Bus Architecture.
+* **Memory Architecture:** On-chip SRAM alongside external SPI Flash execution units.
+* **Peripherals:** SPI Master, UART Controller, Timer Modules, and Configurable GPIO Arrays.
+* **Management & System Control:** Housekeeping SPI (`HKSPI`), Phase-Locked Loops (`PLL`), and Interrupt Request (`IRQ`) controllers.
 
 ---
 
-## ⚙️ SWIG Version Conflict Diagnostics & Resolution
+## Unified Firmware-Driven Verification Flow
 
-During the initial build initialization, the compiler suite threw a fatal environmental dependency error:
+Unlike raw hardware testbenches that rely strictly on forced signal inputs, the VSDSquadron framework uses a **firmware-driven verification methodology** that mirrors actual silicon operation. The execution pipeline converts embedded C programs into behavioral hardware simulations through a multi-tier compilation and simulation engine:
 
 ```text
-CMake Error at cmake/FindSWIG.cmake:
-  Could NOT find SWIG:
-  Found unsuitable version "4.2.0"
-  Required version is at least "4.3"
+  [ C Firmware Source ]
+           │
+           ▼  (riscv32-unknown-elf-gcc)
+  [ ELF Executable Binary ]
+           │
+           ▼  (riscv32-unknown-elf-objcopy)
+  [ Intel HEX Memory Map ]
+           │
+           ├──> [ Icarus Verilog Compiler (iverilog) ] <── [ Peripherals + Caravel Wrapper RTL ]
+           │                       │
+           │                       ▼
+           └───> [ Simulation Runtime Engine (vvp) ]
+                                   │
+                                   ├──> [ Value Change Dump (.vcd File) ] ──> [ GTKWave Analysis ]
+                                   │
+                                   └──> [ Console Logging Check ] ──────────> [ PASS / FAIL Signoff ]
 
 ```
 
-### Diagnostic Investigation
-
-Although the dependency utilities successfully compiled the Simple Wrapper and Interface Generator (SWIG) v4.3.0 into localized directories, the system's active environment path was still discovering an older SWIG binary (v4.2.0) packaged by the base operating system.
-
-### Engineering Resolution
-
-To bypass the host OS path priority and enforce the correct version, the active shell environment path variable was updated to point directly to the new binary location:
-
-```bash
-export PATH=/usr/local/bin:$PATH
-swig -version
-
-```
-
-```text
-SWIG Version 4.3.0
-Compiled with C++17 optimization hooks.
-
-```
-
-Re-running the configuration engine picked up the updated tool path immediately, allowing pre-compilation system validation checks to pass cleanly.
+The compiled C code is loaded directly into the simulated memory space of the SoC at startup. The RISC-V processor boots, executes the firmware instructions, reads/writes to peripheral registers across the Wishbone bus, and toggles specific monitor pins to log a `PASS` or `FAIL` status.
 
 ---
 
-## 🚀 Native Compilation & Binary Verification
+## Phase 1 & 2: Standalone Peripheral Verification Analysis
 
-With all dependency conflicts resolved, the source tree compilation was initiated across all available processor cores:
+To establish a functional baseline, peripherals were isolated from the main processor wrapper and verified independently. This step isolates block bugs from system-level integration issues.
 
-```bash
-mkdir build && cd build
-cmake ..
-make -j$(nproc)
+### Standalone Test Matrix & Coverage Status
 
-```
-
-The system executed the compilation loops without errors, locking down the final executable target:
-
-```text
-[100%] Built target openroad
-
-```
-
-### Build & Run Diagnostics
-
-* **Total Compilation Time:** **3 hours 23 minutes (202m 57s)** of continuous multi-threaded execution.
-* **Active Binary Generation:** Located at `./src/openroad`.
-
-The freshly generated custom executable was verified by launching its interactive shell configuration:
-
-```text
-OpenROAD 26Q2-1895-gba65a4e291
-Features enabled: +GPU +GUI +Python
-
-```
-
-
-*Figure 1: Successful invocation of the locally compiled OpenROAD interactive terminal.*
-
-The operational shell confirms that the physical design engine is fully functional, with hardware GPU acceleration, full graphical layout visualization (GUI), and Python scripting bindings compiled cleanly into the tool.
+| Isolated Test Target | Functional Verification Scope | Simulation Status | Failure Diagnostics / Behavioral Notes |
+| --- | --- | --- | --- |
+| `spi_master` | Validates clock polarity, phase control, and data shifting. | **PASS** | Data registers match expected transmit patterns perfectly. |
+| `uart` | Checks baud rate division, start/stop bit generation, and parity. | **PASS** | Transmit/Receive lines synchronized properly under nominal rates. |
+| `memory` | Validates SRAM read/write byte-enables and back-to-back cycles. | **PASS** | Data bus reads match written patterns with zero wait-states. |
+| `gpio_mgmt` | Verifies directional input/output buffers and interrupt pads. | **PASS** | Direction registers configure pad states properly. |
+| `timer` | Evaluates down-counter registers and expiration triggers. | **FAIL** | **Timeout Error:** Internal match condition failed to trigger. |
+| `irq` | Verifies prioritized interrupt nesting and status registers. | **FAIL** | **Timeout Error:** Core remained trapped in an ISR loop. |
+| `debug` | Checks JTAG interface tap states and debug register mapping. | **FAIL** | **Timeout Error:** Debug request lines failed to handshake. |
 
 ---
 
-## 📋 Compilation Challenge Log
+## Phase 3: Caravel Integrated System-Level Verification
 
-| Identified Roadblock | Root Cause | Selected Engineering Resolution |
-| --- | --- | --- |
-| **Missing Shared Libraries** | Broken links during script execution. | Abandoned pre-built binaries for a clean source compilation. |
-| **Absent Git Submodules** | Cloned without secondary trees. | Executed `git submodule update --init --recursive`. |
-| **Unsuitable SWIG Tooling** | OS path mapped to an older SWIG version. | Reconfigured the `PATH` environment variable in the terminal. |
-| **Compiler Configuration Drop** | Dynamic library discovery errors. | Ran the explicit `DependencyInstaller.sh` routine. |
+Following standalone isolation, the peripheral blocks were integrated into the full **Caravel SoC** harness. This system-level phase evaluates structural connectivity, shared address decoding, clock distribution networks, and real hardware-software interaction bugs.
+
+### Caravel System-Level Test Matrix
+
+| System Integration Test | Primary Evaluation Target | Status | Architectural Takeaways |
+| --- | --- | --- | --- |
+| `user_pass_thru` | Bypasses core logic to link external Flash to internal buses. | **PASS** | SPI Flash data reads pass cleanly through the wrapper logic. |
+| `uart` | Traces full processor-to-UART data streaming over Wishbone. | **PASS** | CPU instructions stream data without data loss or buffer overflows. |
+| `sram_exec` | Verifies code execution directly out of the internal SRAM block. | **PASS** | Instruction fetch routines boot cleanly out of arbitrary RAM spaces. |
+| `spi_master` | Drives external devices via Wishbone register routing commands. | **PASS** | SPI transfers execute smoothly with stable peripheral clock lines. |
+| `pass_thru_fix` | Tests secondary bypass paths and structural logic corrections. | **PASS** | Confirms critical connection bugs are completely resolved. |
+| `mem` | Audits system address space allocations across the memory map. | **PASS** | Memory space partitions isolate system and user sectors safely. |
+| `hkspi_power` | Evaluates low-power configurations and register state isolation. | **PASS** | Core drops current consumption without losing system control. |
+| `hkspi` | Checks direct programming paths via the external housekeeping link. | **PASS** | Registers update correctly without needing main CPU control. |
+| `gpio_mgmt` | Evaluates CPU control over management pads. | **PASS** | System controls input/output pins dynamically via firmware. |
+| `pullupdown` | Verifies internal pull-up and pull-down resistor trim settings. | **PASS** | Pad electrical states switch properly based on config values. |
+| `sysctrl` | Validates global system reset and power-on initialization. | **FAIL** | **Timeout:** Power control loops failed to settle within runtime bounds. |
+| `pll` | Checks clock multiplication, lock state indicators, and feedback. | **FAIL** | **Timeout:** PLL feedback loop failed to assert the lock flag. |
 
 ---
 
-## 💡 Key Technical Takeaways
+##  Key Technical Takeaways
 
-* **Containers are for Execution, Source is for Understanding:** While containerized sandboxes are convenient for running automated flows, compiling tools from source code clarifies how different software components interact.
-* **Path Management Controls the Environment:** Software compilation depends heavily on environment paths. Simply installing a package isn't enough; system variables must be configured properly so the compiler finds the correct tool versions.
-* **EDA Infrastructure is Dominated by Math Frameworks:** Physical design tools are built on advanced mathematics. OpenROAD relies on a deep foundation of open-source frameworks like Google OR-Tools and Eigen to solve complex routing and placement algorithms.
+* **System Integration Uncovers Hidden Roadblocks:** A design block can pass standalone testing perfectly yet fail completely inside a full system wrapper. System simulation is essential to catch real-world issues like Wishbone address conflicts and clock domain handshake faults.
+* **Firmware-Driven Verification Replicates Real Silicon:** Using actual C code to test hardware bridges the gap between software development and chip verification. This ensures the peripheral registers match the software drivers exactly before physical manufacturing.
+* **Timeout Triage Dominates Debug Cycles:** The system timeouts observed in the `PLL` and `SysCtrl` tests highlight that simulation limits must be carefully balanced against physical hardware stabilization times (such as PLL lock loops), requiring targeted configuration tweaks during verification.
 
 ---
 
-## Tooling Matrix
+##  Tooling Matrix
 
-* **Physical Design Base Platform:** OpenROAD Open-Source Source Tree Suite
-* **Build System Orchestration:** CMake Engine / GNU Make Engine
-* **Interface Generation Layer:** SWIG v4.3.0 Custom Build
-* **Algorithmic Optimization Suite:** Google OR-Tools Pipeline
-* **Mathematical Template Matrix:** Eigen C++ Algebra Library
-* **Host Development System:** Linux Ubuntu 24.04 LTS Platform
+* **Verification Environment Orchestration:** GNU Make Engine Platform
+* **Hardware Compiler Toolchain:** Icarus Verilog Compiler (`iverilog`)
+* **Firmware Cross-Compiler Suite:** RISC-V Embedded Toolchain (`riscv32-unknown-elf-gcc`)
+* **Simulation Runtime Engine:** Verilog Virtual Processor (`vvp`)
+* **Waveform Forensic Engine:** GTKWave Waveform Visualization Tool
+* **Target SoC Interconnect:** Efabless Caravel System Harness / Wishbone Bus
+* **Target Embedded Core:** VexRiscv RISC-V CPU Core Framework
