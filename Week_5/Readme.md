@@ -1,13 +1,13 @@
 
 # Week 5: Log Forensics, Report Scraping & Flow Artifact Auditing
 
-## 📌 Overview
+## Overview
 
 Week 5 shifts focus from execution mechanics to data forensics within the **OpenROAD Flow Scripts (ORFS)** workspace. This phase covers a detailed analysis of auto-generated reports, runtime logs, dependency tracking files, and configuration files. By utilizing native Linux shell search utilities and pattern matching engines, this analysis maps out how the system organizes backend design data, handles automated file tracking, and tracks changing density constraints.
 
 ---
 
-## 📂 ORFS Data Hierarchy & Directory Structures
+## ORFS Data Hierarchy & Directory Structures
 
 The automation framework organizes layout artifacts into distinct, self-contained directories. This separation keeps raw log traces detached from signoff reports:
 
@@ -24,9 +24,11 @@ The `/reports/` directory maintains sub-folders tracking each physical milestone
 
 ---
 
-## 🔍 Log Scraping & Data Mining Text Streams
+## Log Scraping & Data Mining Text Streams
 
 To unpack data across thousands of lines of terminal output, native shell filters were deployed to scan the logs recursively:
+
+![Synthesis Log Search](Images/Week_5_1.png)
 
 ```bash
 # Recursively locate every system log file in the build workspace
@@ -46,7 +48,9 @@ The `synth_stat.txt` manifest displays the complexity of the synthesized Greates
 
 ---
 
-## 🛠️ Dependency-Driven Flow Orchestration via GNU Make
+## Dependency-Driven Flow Orchestration via GNU Make
+
+![Makefile Architecture Audit](Images/Week_5_2.png)
 
 To analyze the coordination layer behind the automated toolchain, the root build configuration was audited:
 
@@ -65,7 +69,7 @@ The `Makefile` serves as the central control unit for ORFS. Instead of executing
 
 ---
 
-## 📊 Pipeline Utilization Auditing
+## Pipeline Utilization Auditing
 
 To track how physical cells gradually occupy the core's silicon real estate, pattern-matching utilities were used to pull placement metrics across the run files:
 
@@ -82,6 +86,8 @@ grep -i "utilization" logs/sky130hd/gcd/base/*.log
 
 The extracted logs show how the area profile changes as optimization structures are added to the core:
 
+![Pipeline Metric Scraping](Images/Week_5_3.png)
+
 | Implementation Stage | Core Area Utilization | Dominant Layout Modifications |
 | --- | --- | --- |
 | **Initial Floorplan** | 43.0% | Core boundaries fixed; empty whitespace reserved for routing. |
@@ -92,11 +98,11 @@ The extracted logs show how the area profile changes as optimization structures 
 | **Clock Tree Synthesis (CTS)** | 88.9% | Hierarchical clock buffer trees inserted to balance global skew. |
 | **Final Routing Closure** | **95.3%** | Metal wires and vias routed, locking final density prior to signoff. |
 
-> 📊 **Core Mechanical Insight:** Shifting from a 43% floorplan target to a dense 95.3% routed layout proves that physical design is an iterative optimization process. The layout density increases steadily because tools continuously insert timing buffers, gate resizers, and clock buffers to safely close performance and power margins.
+ **Core Mechanical Insight:** Shifting from a 43% floorplan target to a dense 95.3% routed layout proves that physical design is an iterative optimization process. The layout density increases steadily because tools continuously insert timing buffers, gate resizers, and clock buffers to safely close performance and power margins.
 
 ---
 
-## ⚙️ Path Management via Environment Variables
+## Path Management via Environment Variables
 
 To manage binary dependencies and point the scripts to the correct executables, environmental variables are used to handle tool paths globally:
 
@@ -113,7 +119,7 @@ Using shell environment variables keeps automation scripts portable and modular.
 
 ---
 
-## 💡 Key Technical Takeaways
+## Key Technical Takeaways
 
 * **Signoff Requires Deep Report Forensics:** Building a successful chip involves more than just passing scripts without errors. A clean GDSII requires reviewing text logs and parsing structural reports to confirm area metrics, timing slacks, and signal integrity.
 * **Makefiles Provide Deterministic Layout Control:** Utilizing dependency-driven Makefiles ensures that complex physical design steps are highly repeatable and traceable across different computing environments.
