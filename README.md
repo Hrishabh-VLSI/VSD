@@ -37,7 +37,7 @@ GTKWave
 Icarus Verilog
 Caravel SoC
 
-#Technical Accomplishments
+# Technical Accomplishments
 1. Mastered the complete open-source RTL-to-GDSII flow using OpenLane and ORFS on the SKY130 node.
 
 2. Integrated custom digital modules into a complete RISC-V ecosystem via the Caravel SoC harness.
