@@ -15,7 +15,7 @@ Integrating a new standard cell requires passing both its physical dimensions an
 * **Design Constraints (`.sdc`):** Defines the clock periods, input/output delays, and uncertainty margins via Synopsys Design Constraints.
 
 ![Design Resources](Images/Day_3_1.png)
-*Figure 1: Custom characterization files added to the active project source folder.*
+
 
 ### OpenLane Tool Configuration
 
@@ -31,7 +31,7 @@ set ::env(EXTRA_LEFS)   "$::env(DESIGN_DIR)/src/sky130_vsdinv.lef"
 ```
 
 ![OpenLane Configuration Upgrades](Images/Day_3_2.png)
-*Figure 2: Appending custom LEF and Liberty environmental parameters into config.tcl.*
+
 
 ---
 
@@ -45,7 +45,7 @@ run_synthesis
 
 ```
 ![Yosys Mapping Audit](Images/Day_3_3.png)
-*Figure 3: Synthesis log showing the active mapping and instance count of the custom inverter cell.*
+
 
 Auditing the post-synthesis statistics confirms successful structural integration of the custom block:
 
@@ -70,7 +70,7 @@ set ::env(SYNTH_SIZING) "1"
 ```
 
 ![Timing Environment Diagnostics](Images/Day_3_4.png)
-*Figure 4: Tracking the default library references used by the automated OpenLane flow.*
+
 
 Enabling cell sizing (`SYNTH_SIZING`) allows Yosys to automatically replace low-drive gates with stronger variants (e.g., swapping `sky130_fd_sc_hd__inv_2` for `sky130_fd_sc_hd__inv_8`) along critical paths to satisfy tight delay constraints.
 
@@ -84,7 +84,7 @@ Enabling cell sizing (`SYNTH_SIZING`) allows Yosys to automatically replace low-
 
 
 ![Standalone OpenSTA Setup](Images/Day_3_5.png)
-*Figure 5: Crafting the custom multi-corner pre_sta.conf script for standalone timing signoff.*
+
 
 >  **Core Mechanical Insight:** Shifting to timing-driven synthesis represents a classic PPA trade-off. The engine introduces parallel logic structures and larger, higher drive-strength gates to maximize performance, drastically improving setup slack at the cost of expanding the silicon area.
 
@@ -95,7 +95,7 @@ Enabling cell sizing (`SYNTH_SIZING`) allows Yosys to automatically replace low-
 While OpenLane's internal synthesis analysis reported clean timing, it relies on a single-corner simplified environment using `trimmed.lib`. To perform a strict, realistic signed-off timing analysis, a standalone OpenSTA routing manifest (`pre_sta.conf`) was developed to test multi-corner PVT conditions.
 
 ![Slack Verification Results](Images/Day_3_6.png)
-*Figure 6: Standalone OpenSTA metrics showing the severe setup timing violations under the slow corner.*
+
 
 ```tcl
 # pre_sta.conf script layout snippet
@@ -109,7 +109,7 @@ report_checks -path_delay min_max -fields {slew cap input mini}
 
 ```
 ![Synthesis Optimization Tweaks](Images/Day_3_7.png)
-*Figure 7: Updating design parameters to favor DELAY optimization and high-drive cell sizing.*
+
 
 ### PVT Corner Analysis Summary
 
@@ -121,7 +121,7 @@ report_checks -path_delay min_max -fields {slew cap input mini}
 
 
 ![Post-Optimization Report Metrics](Images/Day_3_8.png)
-*Figure 8: Evaluation showing the area expansion versus improved setup timing slack.*
+
 
 >  **Critical Discovery:** A design that appears timing-clean under a default tool snapshot can suffer severe setup violations when stressed across multi-corner signoff environments. A single-corner pass does not guarantee silicon-ready timing closure.
 
@@ -163,7 +163,7 @@ def read picorv32a.def &
 ```
 
 ![Magic Layout Cell Audit](Images/Day_3_9.png)
-*Figure 9: Finding the physical location of the custom sky130_vsdinv cell inside the Magic layout view.*
+
 
 Searching the layout database confirms that instances of the `sky130_vsdinv` custom cell are fully instantiated, snapped to the site rows, and seamlessly wired into the power grid alongside the standard cell library blocks.
 
