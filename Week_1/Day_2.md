@@ -188,6 +188,7 @@ def read picorv32a.def &
 
 ```
 ![Updated Die Area DEF](Images/Day_2_12.png)
+
 Zooming into the layout row sites confirms that the synthesized cells are fully legalized and locked into place. Cells are positioned based on logic connectivity weight and timing criticality—keeping interconnected flip-flops and combinational logic tightly grouped to minimize parasitic RC wire delay and optimize performance.
 
 ---
