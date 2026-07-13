@@ -45,9 +45,8 @@ set ::env(FP_CORE_UTIL) "10"
 ![Design Configuration](Images/Day_2_2.png)
 
 ### Utilization Formula
-| Parameter | Mathematical Definition |
-| :--- | :--- |
-| **Core Utilization** | $\text{Core Utilization } (\%) = \left( \frac{\text{Total Macro \& Standard Cell Area}}{\text{Total Available Core Area}} \right) \times 100$ |
+Utilization (%) = (Cell Area / Core Area) × 100
+
 A setting of `10` allocates exactly 10% of the interior core space to standard logic cells, reserving the remaining 90% as pristine whitespace. This low-density initialization guarantees abundant routing channels for dense interconnects, though it expands the overall physical silicon area.
 
 ### Runtime Snapshots
